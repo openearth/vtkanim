@@ -32,11 +32,11 @@ def ugrid_from_file(filename):
     vars['NetNode_z'] = ds.variables['NetNode_z'][::thin]
     vars['NetElemNode'] = ds.variables['NetElemNode'][::thin]
     vars['LayCoord_w'] = ds.variables['LayCoord_w'][:]
-    vars['s1'] = ds.variables['s1'][30, ::thin]
-    vars['sa1'] = ds.variables['sa1'][30, ::thin,:]
-    vars['ucx'] = ds.variables['ucx'][30, ::thin,:]
-    vars['ucy'] = ds.variables['ucy'][30, ::thin,:]
-    vars['ucz'] = ds.variables['ucz'][30, ::thin,:]
+    vars['s1'] = ds.variables['s1'][0, ::thin]
+    vars['sa1'] = ds.variables['sa1'][0, ::thin,:]
+    vars['ucx'] = ds.variables['ucx'][0, ::thin,:]
+    vars['ucy'] = ds.variables['ucy'][0, ::thin,:]
+    vars['ucz'] = ds.variables['ucz'][0, ::thin,:]
 
     dims['nelem'] = len(ds.dimensions['nNetElem'])
     ds.close()
@@ -183,7 +183,8 @@ def curvi_from_file(filename):
     vars['suspsedconc'] = ds.variables['suspsedconc'][50,0,::thin,1:-1:thin,1:-1:thin].squeeze()
 
     x, y = vars['x'], vars['y']
-    logger.debug("x: %s", x)
+    #print 'debug',x,y
+    #logger.debug("x: %s", x)
 
     n_cells = np.prod(x.shape)
     n_rows = x.shape[0]
@@ -313,10 +314,16 @@ def curvi_from_file(filename):
     logger.debug("%s", grid2)
 
 
-    #file_name = 'grid2.vtu'
-    #writer = tvtk.XMLDataSetWriter(file_name=file_name, input=grid2)
-    #writer = tvtk.UnstructuredGridWriter(file_name=file_name, input=grid2)
-    #writer.write()
+    file_name = 'grid2.vtk'
+    writer = tvtk.XMLDataSetWriter(file_name=file_name, input=grid2)
+    writer = tvtk.UnstructuredGridWriter(file_name=file_name, input=grid2)
+    writer.write()
+
+    file_name = 'grid1.vtk'
+    writer = tvtk.XMLDataSetWriter(file_name=file_name, input=grid1)
+    writer = tvtk.UnstructuredGridWriter(file_name=file_name, input=grid1)
+    writer.write()
+
 
     i = 0
     cell = grid2.get_cell(i)

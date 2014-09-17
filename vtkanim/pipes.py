@@ -51,6 +51,7 @@ def salt(engine):
 
 pipes = {}
 pipes['ugrid'] = [bathymetry, waterlevel, salt]
+pipes['curvi'] = [bathymetry, waterlevel, salt]
 
 
 # triangulate = DataSetTriangleFilter()

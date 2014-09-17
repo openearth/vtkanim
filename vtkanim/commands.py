@@ -21,19 +21,24 @@ from mayavi.filters.threshold import Threshold
 from mayavi.scripts import mayavi2
 from tvtk.api import tvtk
 import mayavi.mlab as mlab
+mlab.options.offscreen = True
 import docopt
 
 import sources
 # custom filter
 from .filters import DataSetTriangleFilter
 import pipes
-import updates
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 @mayavi2.standalone
 def main():
     arguments = docopt.docopt(__doc__, version='0.1')
+    
+    if arguments['--type'] == 'curvi':
+        import updates_d3d as updates
+    else:
+        import updates_fm as updates
 
     logger.info("%s", arguments)
     # load the source generator
@@ -41,6 +46,7 @@ def main():
     # generate the vtksources
     grids = list(source_generator(arguments['<file>']))
     pipe_list = list(pipes.pipes[arguments['--type']])
+    print arguments['--type']
     update_list = list(updates.updates[arguments['--type']])
     # # Setup the scen
     scene = mayavi.new_scene()
@@ -77,6 +83,8 @@ def main():
             update(arguments['<file>'], grid, t)
         scene.render()
         mlab.savefig('test%03d.png' % (t, ))
+    import sys
+    sys.exit(0)
 """
 import mayavi.mlab
 recorder = mayavi.mlab.start_recording()
