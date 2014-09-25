@@ -166,7 +166,7 @@ def ugrid_from_file(filename):
     yield grid3
 
 
-def curvi_from_file(filename, t=0, grids=[]):
+def curvi_from_file(filename, t=0, grids=[], scale=10):
     """
     Generate an unstructured grid from filename.
     """
@@ -174,8 +174,6 @@ def curvi_from_file(filename, t=0, grids=[]):
     logging.debug(ds.variables.keys())
     vars = {}
     dims = {}
-
-    scale = 15
 
     # we have to squeeze out the nans
     thin = 1
@@ -230,9 +228,9 @@ def curvi_from_file(filename, t=0, grids=[]):
         nodes_z = np.repeat(nodes_z[:, :, np.newaxis], n_layers + 1, 2)
 
         for i in range(n_layers + 1):
-           z_multiplier = vars['LayerInterf'][n_layers - i]
-           layer_depth = -z_multiplier * (wl - h)
-           nodes_z[:, :, i] = layer_depth * scale
+            z_multiplier = vars['LayerInterf'][i]
+            layer_depth = z_multiplier * (h - wl)
+            nodes_z[:, :, i] = layer_depth * scale
 
         points = grids[1].points.to_array()
         points[:, 2] = nodes_z.ravel()
@@ -352,8 +350,8 @@ def curvi_from_file(filename, t=0, grids=[]):
     nodes_z = np.repeat(nodes_z[:, :, np.newaxis], n_layers + 1, 2)
 
     for i in range(n_layers + 1):
-       z_multiplier = vars['LayerInterf'][n_layers - i]
-       layer_depth = -z_multiplier * (wl - h)
+       z_multiplier = vars['LayerInterf'][i]
+       layer_depth = z_multiplier * (h - wl)
        nodes_z[:, :, i] = layer_depth * scale
     # for i in range(n_layers + 1):
     #   nodes_z[:, :, i] = 10 * (n_layers - i) * scale
@@ -393,16 +391,18 @@ def curvi_from_file(filename, t=0, grids=[]):
     yield grid3
 
 
-def curvi_to_vtk(file):
+def curvi_to_vtk(file, scale_z):
     ds = netCDF4.Dataset(file)
     ntimes = len(ds.dimensions['time'])
     logger.info("Number of times: %s", ntimes)
 
     grids = []
-    for t in range(ntimes):
-        file_without_extension = os.path.splitext(os.path.basename(file))[0]
 
-        grids = list(curvi_from_file(file, t, grids))
+    file_dir = os.path.dirname(file)
+    file_without_extension = os.path.join(file_dir, os.path.splitext(os.path.basename(file))[0])
+
+    for t in range(ntimes):
+        grids = list(curvi_from_file(file, t, grids, scale_z))
 
         logger.info("Saving time %d", t)
 
